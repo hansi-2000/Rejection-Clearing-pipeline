@@ -1,0 +1,36 @@
+{
+    "environments": ["Test3"],
+
+    "Test1": {
+        "node": "DLK1PDE183",
+        "linux": "dse1k8s425",
+        "db": "ifsapp/ifsapp@DLK1PDE183/ifspdb",
+        "k8snamespace": "ifscloud22r1translkp",
+        "note": "This is CMB network env so this env can't use in dlk1pde"
+    },
+    "Test2": {
+        "node": "dlk1pde585",
+        "db": "ifsapp/ifsapp@dlk1pde585/ifspdb",
+        "k8snamespace": "ifscloud22r1translkp",
+        "note": "This is windose env and this env haven't linux env"
+    },
+
+    "Test3": {
+        "linux": "dse1k8s425",
+        "db": "ifsapp/ifsapp@dse1k8s425/ifspdb",
+        "k8snamespace": "pathlk-test",
+        "note": "This is linux env and this env haven't windose env"
+    },
+
+    "translation":[
+        ["Test3", "Test1"]
+    ],
+
+    "translations":[
+        ["Test2", "Test3"],
+        ["Test2", "Test3"],
+        ["Test2", "Test3"],
+        ["Test2", "Test3"]
+    ]
+
+}

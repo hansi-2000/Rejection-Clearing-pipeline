@@ -1,0 +1,84 @@
+image:
+  name: rnddockerdev.azurecr.io/ifs/odp-internal-test-build
+  username: $REPOSITORY_USER
+  password: $REPOSITORY_PWD
+definitions:
+  steps:
+    - step: &run_on_self_hosted_runner
+        runs-on:
+          - 'self.hosted'
+          - 'linux'
+          - 'vulnerability.scan'
+    # Apps-10 runner
+    - step: &apps_10_runner
+        runs-on:
+          - 'self.hosted'
+          - 'linux'
+          - 'rejection.sync.apps.10.runner'
+    # Cloud runner
+    - step: &cloud_runner
+        runs-on:
+          - 'self.hosted'
+          - 'linux'
+          - 'vulnerability.scan'  # 'rejection.sync.cloud.runner'   # 'vulnerability.scan'
+
+pipelines:
+  custom:
+    rejection-clearing-process-fully-automated: ########################################################################
+      - parallel:
+          - step: # Generate scripts -----------------------------------------------------------------------------------
+              name: Generate Scripts
+              script:
+                - chmod -R +x $BITBUCKET_CLONE_DIR/*
+                - cd $BITBUCKET_CLONE_DIR/Translation-Scripts/Translation-automating/Rejected-Clearing
+                - python3 generate_scripts.py
+                - ls -al TRANSLATION-CLEARING-SCRIPT
+                - cp -r TRANSLATION-CLEARING-SCRIPT/* $BITBUCKET_CLONE_DIR
+              artifacts:
+                - GENERATE_SQL_SCRIPTS/**
+          - step: # Get Kube Config Files in Cloud Environments --------------------------------------------------------
+              name: Get Kube Config Files in Cloud Environments
+              <<: *cloud_runner
+              script:
+                - chmod -R +x $BITBUCKET_CLONE_DIR/*
+                - mkdir KUBE_CONFIGS
+                - cd $BITBUCKET_CLONE_DIR/Translation-Scripts/Translation-automating/Rejected-Clearing
+         #       - ping dse1k8s425
+                - pipeline-scripts/setup-ssh-key.sh
+                - pipeline-scripts/get-kube-configs.sh
+                - ls $BITBUCKET_CLONE_DIR/KUBE_CONFIGS
+              artifacts:
+                - KUBE_CONFIGS/**
+      - parallel:
+          - step: # Clearing Apps10 ------------------------------------------------------------------------------------
+              name: Clearing Apps10
+              <<: *apps_10_runner
+              script:
+                - chmod -R +x $BITBUCKET_CLONE_DIR/*
+                - cd $BITBUCKET_CLONE_DIR/Translation-Scripts/Translation-automating/Rejected-Clearing
+                - pipeline-scripts/setup-ssh-key.sh
+                - pipeline-scripts/clearing-script-apps-10.sh
+          - step: # Clearing cloud ENVs --------------------------------------------------------------------------------
+              name: Clearing cloud ENVs
+              <<: *cloud_runner
+              script:
+                - chmod -R +x $BITBUCKET_CLONE_DIR/*
+                - cd $BITBUCKET_CLONE_DIR/Translation-Scripts/Translation-automating/Rejected-Clearing
+                - pipeline-scripts/setup-ssh-key.sh
+                - pipeline-scripts/clearing-script-cloud.sh
+      - parallel:
+          - step: # Up OData providers ---------------------------------------------------------------------------------
+              name: Up OData providers
+              <<: *cloud_runner
+              script:
+                - chmod -R +x $BITBUCKET_CLONE_DIR/*
+                - ls KUBE_CONFIGS
+                - $BITBUCKET_CLONE_DIR/Translation-Scripts/Translation-automating/Rejected-Clearing/pipeline-scripts/up-Odata-script.sh
+          - step: # Disable rejection in database ---------------------------------------------------------------------
+              name: Disable REJECTION_STOP event
+              <<: *apps_10_runner
+              script:
+                - chmod -R +x $BITBUCKET_CLONE_DIR/*
+                # for test: ifsapp/ifsapp@LKPGSE1524/D1524 ----> create an event in DB before testing
+                # apps10: ifsapp/transapp@lkpgse65/s065 ----> replace below host, PW, DB and table before running the real env
+                - sqlplus ifsapp/transapp@lkpgse65/s065 @$BITBUCKET_CLONE_DIR/Translation-Scripts/Translation-automating/Rejected-Clearing/Apps10-disable.sql

@@ -1,0 +1,57 @@
+{
+    "all-environments": ["APPS10","T22R1","T22R2","T23R1","T23R2","T24R1","T24R2"],
+
+    "environments": ["T22R1","T22R2","T23R1","T23R2","T24R1","T24R2"],
+
+    "APPS10": {
+        "node": "lkpgse65",
+        "db": "ifsapp/transapp@lkpgse65/s065"
+    },
+    "T22R1": {
+        "node": "DSE1PDE163",
+        "linux": "dse1k8s213",
+        "db": "ifsapp/ifsapp@DSE1PDE163/IFSPDB",
+        "k8snamespace": "ifscloud22r1translkp"
+    },
+    "T22R2": {
+        "node": "DSE1PDE701",
+        "linux": "dse1k8s300",
+        "db": "ifsapp/ifsapp@DSE1PDE701/IFSPDB",
+        "k8snamespace": "ifscloud22r2translkp"
+    },
+    "T23R1": {
+        "node": "dse1pde734",
+        "linux": "dse1k8s402",
+        "db": "ifsapp/ifsapp@DSE1PDE734/IFSPDB",
+        "k8snamespace": "ifscloud23r1translkp"
+    },
+    "T23R2": {
+        "node": "dse1pde946",
+        "linux": "dse1k8s534",
+        "db": "ifsapp/ifsapp@DSE1PDE946/IFSPDB",
+        "k8snamespace": "ifscloud23r2translkp"
+    },
+    "T24R1": {
+        "node": "dse1pde149",
+        "linux": "dse1k8s164",
+        "db": "ifsapp/ifsapp@DSE1PDE149/IFSPDB",
+        "k8snamespace": "ifscloud24r1translkp"
+    },
+    "T24R2": {
+        "node": "dse1pde887",
+        "linux": "dse1k8s372",
+        "db": "ifsapp/ifsapp@DSE1PDE887/IFSPDB",
+        "k8snamespace": "ifscloud24r2translkp"
+    },
+
+    "translation": [["APPS10", "T22R1"]],
+
+    "translations": [
+        ["T22R1","T22R2"],
+        ["T22R2","T23R1"],
+        ["T23R1","T23R2"],
+        ["T23R2","T24R1"]
+        ["T24R1","T24R2"]
+    ]
+
+}
